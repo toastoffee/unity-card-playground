@@ -63,7 +63,7 @@ public struct StaticInst<TInst> where TInst : new() {
 }
 #endregion
 
-public struct StaticTable<TValue> {
+public struct AutoModelTable<TValue> {
   public TValue this[string key] {
     get => Read(key);
   }

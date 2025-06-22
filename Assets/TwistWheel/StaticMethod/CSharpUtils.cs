@@ -156,6 +156,30 @@ public static class CSharpUtils {
     return new CollectionAdder<T>(collection);
   }
 
+  public struct ListOperator<T> {
+    public List<T> list;
+
+    public static implicit operator List<T>(ListOperator<T> op) {
+      return op.list;
+    }
+  }
+  public static ListOperator<T> Append<T>(this ListOperator<T> op, T element, int cnt = 1) {
+    return op.list.Append(element, cnt);
+  }
+  public static ListOperator<T> Append<T>(this List<T> list, T element, int cnt = 1) {
+    var op = new ListOperator<T>() {
+      list = list,
+    };
+    if (list == null) {
+      return op;
+    }
+    for (int i = 0; i < cnt; i++) {
+      list.Add(element);
+    }
+    return op;
+  }
+
+
   public static T SafeInvoke<T>(this Func<T> func) {
     if (func == null) {
       return default(T);
@@ -222,3 +246,4 @@ public struct SeqNumChecker {
   public static bool operator ==(SeqNumChecker a, SeqNumChecker b) => a.m_cachedNum == b.m_cachedNum;
   public static bool operator !=(SeqNumChecker a, SeqNumChecker b) => a.m_cachedNum != b.m_cachedNum;
 }
+

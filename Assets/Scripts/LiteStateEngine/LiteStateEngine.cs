@@ -9,7 +9,7 @@ public class LiteStateEngine : MonoBehaviour {
 
 	private Dictionary<Type, LiteState> m_stateDict = new();
 	private Stack<LiteState> m_stack = new();
-	public LiteState frontState => m_stack.Peek();
+	public LiteState frontState => m_stack.Count > 0 ? m_stack.Peek() : null;
 
 	private void Awake() {
 		InitStateEngine();
@@ -17,12 +17,16 @@ public class LiteStateEngine : MonoBehaviour {
 			return;
 		}
 		var defaultState = _registerStates[0];
+		foreach (var state in m_stateDict.Values) {
+			state.SetStataeActive(state == defaultState);
+		}
 		AddTop(defaultState.GetType());
 	}
 
 	private void InitStateEngine() {
 		foreach (var state in _registerStates) {
 			m_stateDict[state.GetType()] = state;
+			state.InitByStateEngine(this);
 		}
 	}
 
@@ -34,9 +38,11 @@ public class LiteStateEngine : MonoBehaviour {
 		var prev = frontState;
 		if (frontState != null) {
 			frontState.OnExit();
+			frontState.SetStataeActive(false);
 		}
 		if (m_stateDict.TryGetValue(type, out var state)) {
 			m_stack.Push(state);
+			state.SetStataeActive(true);
 			state.OnEnter();
 		} else {
 			Debug.LogError($"State of type {type} not found in registered states.");
@@ -53,9 +59,11 @@ public class LiteStateEngine : MonoBehaviour {
 			return;
 		}
 		top.OnExit();
+		top.SetStataeActive(false);
 		m_stack.Pop();
 		if (m_stateDict.TryGetValue(type, out var state)) {
 			m_stack.Push(state);
+			state.SetStataeActive(true);
 			state.OnEnter();
 		} else {
 			Debug.LogError($"State of type {type} not found in registered states.");
@@ -70,8 +78,10 @@ public class LiteStateEngine : MonoBehaviour {
 		}
 		var top = m_stack.Pop();
 		top.OnExit();
+		top.SetStataeActive(false);
 		var nextState = m_stack.Peek();
 		if (nextState != null) {
+			nextState.SetStataeActive(true);
 			nextState.OnResume();
 		}
 	}
